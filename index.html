@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英単語リズムゲーム</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(#fff7df,#eaf8ff);
+  text-align:center;
+  color:#263044;
+}
+.wrap{
+  max-width:420px;
+  margin:auto;
+  padding:18px;
+}
+h1{
+  color:#ff8c00;
+}
+#game{
+  position:relative;
+  height:430px;
+  background:#fff;
+  border:4px solid #ffd166;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 8px 20px rgba(0,0,0,.12);
+}
+.note{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:64px;
+}
+.line{
+  position:absolute;
+  bottom:80px;
+  width:100%;
+  height:8px;
+  background:#ff8c00;
+}
+.tap{
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  width:80%;
+  padding:18px;
+  font-size:24px;
+  font-weight:bold;
+  border:none;
+  border-radius:18px;
+  background:#ffb703;
+  color:#fff;
+}
+.info{
+  font-size:20px;
+  font-weight:bold;
+  margin:12px 0;
+}
+button.start{
+  padding:16px 28px;
+  font-size:22px;
+  border:none;
+  border-radius:18px;
+  background:#2a9d8f;
+  color:white;
+  font-weight:bold;
+}
+#message{
+  font-size:26px;
+  font-weight:bold;
+  color:#fb8500;
+  height:36px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <h1>🎵 英単語リズムゲーム</h1>
+
+  <div class="info">
+    SCORE：<span id="score">0</span>
+  </div>
+
+  <button class="start" onclick="startGame()">スタート</button>
+
+  <p id="target">音を聞いてタップしよう！</p>
+
+  <div id="game">
+    <div class="line"></div>
+    <button class="tap" onclick="tapNote()">TAP!</button>
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<script>
+const words = [
+  { word:"apple", emoji:"🍎" },
+  { word:"banana", emoji:"🍌" },
+  { word:"cat", emoji:"🐱" },
+  { word:"dog", emoji:"🐶" },
+  { word:"car", emoji:"🚗" },
+  { word:"star", emoji:"⭐" },
+  { word:"fish", emoji:"🐟" },
+  { word:"bird", emoji:"🐦" }
+];
+
+let current = null;
+let note = null;
+let y = 0;
+let speed = 3;
+let score = 0;
+let playing = false;
+let animationId = null;
+
+const game = document.getElementById("game");
+const scoreEl = document.getElementById("score");
+const targetEl = document.getElementById("target");
+const messageEl = document.getElementById("message");
+
+function speak(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "en-US";
+  utter.rate = 0.85;
+  speechSynthesis.speak(utter);
+}
+
+function startGame(){
+  score = 0;
+  scoreEl.textContent = score;
+  playing = true;
+  messageEl.textContent = "";
+  nextNote();
+}
+
+function nextNote(){
+  if(!playing) return;
+
+  if(note){
+    note.remove();
+  }
+
+  current = words[Math.floor(Math.random() * words.length)];
+
+  targetEl.textContent = `🎧 聞こえた単語：${current.word}`;
+  speak(current.word);
+
+  note = document.createElement("div");
+  note.className = "note";
+  note.textContent = current.emoji;
+  game.appendChild(note);
+
+  y = -70;
+  moveNote();
+}
+
+function moveNote(){
+  y += speed;
+  note.style.top = y + "px";
+
+  if(y > 430){
+    messageEl.textContent = "MISS...";
+    setTimeout(nextNote, 700);
+    return;
+  }
+
+  animationId = requestAnimationFrame(moveNote);
+}
+
+function tapNote(){
+  if(!note) return;
+
+  const lineY = 430 - 80;
+  const diff = Math.abs(y - lineY);
+
+  cancelAnimationFrame(animationId);
+
+  if(diff < 35){
+    score += 100;
+    messageEl.textContent = "PERFECT!";
+    speak(current.word);
+  }else if(diff < 70){
+    score += 50;
+    messageEl.textContent = "GOOD!";
+    speak(current.word);
+  }else{
+    messageEl.textContent = "MISS...";
+  }
+
+  scoreEl.textContent = score;
+
+  setTimeout(nextNote, 800);
+}
+</script>
+</body>
+</html>
 
