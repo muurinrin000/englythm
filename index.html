@@ -118,6 +118,7 @@ let speed = 3;
 let score = 0;
 let playing = false;
 let animationId = null;
+let isJudging = false;
 
 const game = document.getElementById("game");
 const scoreEl = document.getElementById("score");
@@ -141,6 +142,8 @@ function startGame(){
 
 function nextNote(){
   if(!playing) return;
+
+  isJudging = false;
 
   if(note){
     note.remove();
@@ -174,12 +177,13 @@ function moveNote(){
 }
 
 function tapNote(){
-  if(!note) return;
+  if(!note || isJudging) return;
+
+  isJudging = true;
+  cancelAnimationFrame(animationId);
 
   const lineY = 430 - 80;
   const diff = Math.abs(y - lineY);
-
-  cancelAnimationFrame(animationId);
 
   if(diff < 35){
     score += 100;
@@ -197,6 +201,7 @@ function tapNote(){
 
   setTimeout(nextNote, 800);
 }
+  
 </script>
 </body>
 </html>
